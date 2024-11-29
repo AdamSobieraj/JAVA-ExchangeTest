@@ -2,38 +2,34 @@ package com.example.javacurrency.common;
 
 import com.example.javacurrency.account.UserAccount;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class AccountRepository {
 
-    private final Set<UserAccount> accounts = new HashSet<>();
+    private final Map<UUID, UserAccount> accounts = new HashMap<>();
 
     public void addAccount(UserAccount account) {
-        accounts.add(account);
+        accounts.put(account.getUuid(), account);
     }
 
     public List<UserAccount> getAllAccounts() {
-        return new ArrayList<>(accounts);
+        return new ArrayList<>(accounts.values());
     }
 
     public UserAccount getAccountById(UUID id) {
-        return accounts.stream()
+        return accounts.values().stream()
                 .filter(acc -> acc.getUuid().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Account not found"));
     }
 
     public boolean containsUsername(String firstName, String lastName) {
-        return accounts.stream().anyMatch(acc ->
+        return accounts.values().stream().anyMatch(acc ->
                 acc.getFirstName().equals(firstName) && acc.getLastName().equals(lastName));
     }
 
     public UserAccount getAccountByFirstNameAndLastName(String firstName, String lastName) {
-        return accounts.stream()
+        return accounts.values().stream()
                 .filter(acc -> acc.getFirstName().equalsIgnoreCase(firstName) &&
                         acc.getLastName().equalsIgnoreCase(lastName))
                 .findFirst()
@@ -41,14 +37,14 @@ public class AccountRepository {
     }
 
     public void removeAccountByFirstNameAndLastName(String firstName, String lastName) {
-        accounts.removeIf(acc ->
+        accounts.values().removeIf(acc ->
                 acc.getFirstName().equalsIgnoreCase(firstName) &&
                         acc.getLastName().equalsIgnoreCase(lastName)
         );
     }
 
     public UserAccount updateAccount(UserAccount updatedAccount) {
-        UserAccount existingAccount = accounts.stream()
+        UserAccount existingAccount = accounts.values().stream()
                 .filter(acc -> acc.getUuid().equals(updatedAccount.getUuid()))
                 .findFirst()
                 .orElse(null);
@@ -61,8 +57,7 @@ public class AccountRepository {
             existingAccount.setBalance(updatedAccount.getBalance());
             existingAccount.setCurrency(updatedAccount.getCurrency());
 
-            accounts.remove(existingAccount);
-            accounts.add(existingAccount);
+            accounts.put(existingAccount.getUuid(), existingAccount);
             return existingAccount;
         } else {
             throw new IllegalArgumentException("Account not found for UUID: " + updatedAccount.getUuid().toString());

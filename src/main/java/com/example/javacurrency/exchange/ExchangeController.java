@@ -19,16 +19,11 @@ public class ExchangeController {
 
     private final CurrencyExchangeService currencyExchangeService;
 
-    @PostMapping("/pln-to-usd")
-    public ResponseEntity<ExchangeResult> exchangePlnToUsd(@Valid @RequestBody ExchangeRequest request) throws IOException {
-        ExchangeResult result = currencyExchangeService.exchangePlnToUsd(request.getAmount());
+    @PostMapping("/exchange")
+    public ResponseEntity<ExchangeResult> exchange(@Valid @RequestBody ExchangeRequest request) throws IOException {
+        ExchangeResult result = currencyExchangeService.exchange(request);
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/usd-to-pln")
-    public ResponseEntity<ExchangeResult> exchangeUsdToPln(@Valid @RequestBody ExchangeRequest request) throws IOException {
-        ExchangeResult result = currencyExchangeService.exchangeUsdToPln(request.getAmount());
-        return ResponseEntity.ok(result);
-    }
 
 }

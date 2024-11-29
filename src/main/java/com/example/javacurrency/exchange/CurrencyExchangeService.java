@@ -1,45 +1,35 @@
 package com.example.javacurrency.exchange;
 
-import com.example.javacurrency.common.Currency;
-import lombok.RequiredArgsConstructor;
-
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 
-@RequiredArgsConstructor
 public class CurrencyExchangeService {
 
     private final ExchangeRateService exchangeRateService;
 
-    public ExchangeResult exchangePlnToUsd(BigDecimal amount) throws IOException {
-        ExchangeRate exchangeRate = exchangeRateService.getLatestExchangeRate();
+    private final Map<String, ExchangeStrategy> strategies = new HashMap<>();
 
-        BigDecimal resultAmount = amount.multiply(BigDecimal.valueOf(exchangeRate.getMid()));
-
-        ExchangeResult result = new ExchangeResult();
-        result.setFromCurrency(Currency.PLN.getName());
-        result.setToCurrency(Currency.USD.getName());
-        result.setAmount(amount);
-        result.setResultAmount(resultAmount);
-        result.setExchangeRate(BigDecimal.valueOf(exchangeRate.getMid()));
-
-        return result;
+    public CurrencyExchangeService(ExchangeRateService exchangeRateService) {
+        this.exchangeRateService = exchangeRateService;
+        initializeStrategies();
     }
 
-    public ExchangeResult exchangeUsdToPln(BigDecimal amount) throws IOException {
-        ExchangeRate exchangeRate = exchangeRateService.getLatestExchangeRate();
+    private void initializeStrategies() {
+        strategies.put("USD", new PlnToUsdStrategy(exchangeRateService));
+        strategies.put("PLN", new UsdToPlnStrategy(exchangeRateService));
+    }
 
-        BigDecimal resultAmount = amount.divide(BigDecimal.valueOf(exchangeRate.getMid()), 4, RoundingMode.HALF_UP);
+    public ExchangeResult exchange(ExchangeRequest request) {
+        return executeStrategy(request.getCurrency().getCode(), request.getAmount());
+    }
 
-        ExchangeResult result = new ExchangeResult();
-        result.setFromCurrency(Currency.USD.getName());
-        result.setToCurrency(Currency.PLN.getName());
-        result.setAmount(amount);
-        result.setResultAmount(resultAmount);
-        result.setExchangeRate(BigDecimal.valueOf(exchangeRate.getMid()));
-
-        return result;
+    private ExchangeResult executeStrategy(String strategyKey, BigDecimal amount) {
+        ExchangeStrategy strategy = strategies.get(strategyKey);
+        if (strategy == null) {
+            throw new IllegalArgumentException("Unknown strategy: " + strategyKey);
+        }
+        return strategy.execute(amount);
     }
 
 }

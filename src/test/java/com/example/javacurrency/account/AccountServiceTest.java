@@ -167,7 +167,7 @@ public class AccountServiceTest {
         mockUserAccount.setUuid(id);
 
         when(accountRepository.getAccountById(any())).thenReturn(mockUserAccount);
-        when(currencyExchangeService.exchangeUsdToPln(any())).thenReturn(exchangeResult);
+        when(currencyExchangeService.exchange(any())).thenReturn(exchangeResult);
 
         // Then
         UserAccount result = accountService.exchangeCurrency(mockUserAccount.getUuid().toString());

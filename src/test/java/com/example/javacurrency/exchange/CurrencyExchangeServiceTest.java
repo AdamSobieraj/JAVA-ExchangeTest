@@ -29,16 +29,20 @@ class CurrencyExchangeServiceTest {
     @Test
     @SneakyThrows
     void testExchangePlnToUsd() {
-        // Arrange
+        // Given
         BigDecimal amount = new BigDecimal("100");
         ExchangeRate exchangeRate = new ExchangeRate();
         exchangeRate.setMid(Double.parseDouble("3.5"));
-        when(exchangeRateService.getLatestExchangeRate()).thenReturn(exchangeRate);
+        when(exchangeRateService.getLatestExchangeRate(any())).thenReturn(exchangeRate);
 
-        // Act
-        ExchangeResult result = currencyExchangeService.exchangePlnToUsd(amount);
+        ExchangeRequest exchangeRequest = new ExchangeRequest();
+        exchangeRequest.setAmount(amount);
+        exchangeRequest.setCurrency(Currency.USD);
 
-        // Assert
+        // When
+        ExchangeResult result = currencyExchangeService.exchange(exchangeRequest);
+
+        // Then
         assertNotNull(result);
         assertEquals(Currency.PLN.getName(), result.getFromCurrency());
         assertEquals(Currency.USD.getName(), result.getToCurrency());
@@ -46,23 +50,27 @@ class CurrencyExchangeServiceTest {
         assertEquals(new BigDecimal("350.0"), result.getResultAmount());
         assertEquals(new BigDecimal("3.5"), result.getExchangeRate());
 
-        verify(exchangeRateService).getLatestExchangeRate();
+        verify(exchangeRateService).getLatestExchangeRate(Currency.USD.getCode());
         verifyNoMoreInteractions(exchangeRateService);
     }
 
     @Test
     @SneakyThrows
     void testExchangeUsdToPln() {
-        // Arrange
+        // Given
         BigDecimal amount = new BigDecimal("100");
         ExchangeRate exchangeRate = new ExchangeRate();
         exchangeRate.setMid(Double.parseDouble("3.5"));
-        when(exchangeRateService.getLatestExchangeRate()).thenReturn(exchangeRate);
+        when(exchangeRateService.getLatestExchangeRate(any())).thenReturn(exchangeRate);
 
-        // Act
-        ExchangeResult result = currencyExchangeService.exchangeUsdToPln(amount);
+        ExchangeRequest exchangeRequest = new ExchangeRequest();
+        exchangeRequest.setAmount(amount);
+        exchangeRequest.setCurrency(Currency.PLN);
 
-        // Assert
+        // When
+        ExchangeResult result = currencyExchangeService.exchange(exchangeRequest);
+
+        // Then
         assertNotNull(result);
         assertEquals(Currency.USD.getName(), result.getFromCurrency());
         assertEquals(Currency.PLN.getName(), result.getToCurrency());
@@ -70,7 +78,7 @@ class CurrencyExchangeServiceTest {
         assertEquals(new BigDecimal("28.5714"), result.getResultAmount());
         assertEquals(new BigDecimal("3.5"), result.getExchangeRate());
 
-        verify(exchangeRateService).getLatestExchangeRate();
+        verify(exchangeRateService).getLatestExchangeRate(Currency.USD.getCode());
         verifyNoMoreInteractions(exchangeRateService);
     }
 }

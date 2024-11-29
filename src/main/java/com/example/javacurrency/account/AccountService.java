@@ -3,6 +3,7 @@ package com.example.javacurrency.account;
 import com.example.javacurrency.common.AccountRepository;
 import com.example.javacurrency.common.Currency;
 import com.example.javacurrency.exchange.CurrencyExchangeService;
+import com.example.javacurrency.exchange.ExchangeRequest;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
@@ -48,13 +49,13 @@ public class AccountService {
     public UserAccount exchangeCurrency(String uuid) throws IOException {
         UserAccount account = accountRepository.getAccountById(UUID.fromString(uuid));
 
-        if (account.getCurrency().equals(Currency.PLN)) {
-            account.setBalance(currencyExchangeService.exchangePlnToUsd(account.getBalance()).getResultAmount());
-            account.setCurrency(Currency.USD);
-        } else {
-            account.setBalance(currencyExchangeService.exchangeUsdToPln(account.getBalance()).getResultAmount());
-            account.setCurrency(Currency.PLN);
-        }
+        ExchangeRequest exchangeRequest = new ExchangeRequest();
+        exchangeRequest.setCurrency(account.getCurrency());
+        exchangeRequest.setAmount(account.getBalance());
+
+        account.setBalance(currencyExchangeService.exchange(exchangeRequest).getResultAmount());
+        account.setCurrency(account.getCurrency());
+
 
         updateAccount(account);
 

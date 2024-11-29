@@ -52,24 +52,22 @@ class ExchangeControllerTest {
         expectedResult.setExchangeRate(new BigDecimal("0.8732"));
 
         requestUSDtoPLN = new ExchangeRequest();
-        requestUSDtoPLN.setCurrencyFrom(Currency.USD.getName());
-        requestUSDtoPLN.setCurrencyTo(Currency.PLN.getName());
         requestUSDtoPLN.setAmount(new BigDecimal("100"));
+        requestUSDtoPLN.setCurrency(Currency.PLN);
 
         requestPLNtoUSD = new ExchangeRequest();
-        requestPLNtoUSD.setCurrencyFrom(Currency.PLN.getName());
-        requestPLNtoUSD.setCurrencyTo(Currency.USD.getName());
         requestPLNtoUSD.setAmount(new BigDecimal("100"));
+        requestPLNtoUSD.setCurrency(Currency.USD);
     }
 
     @Test
     @SneakyThrows
     void testExchangePlnToUsd() {
         // Given
-        when(currencyExchangeService.exchangePlnToUsd(any())).thenReturn(expectedResult);
+        when(currencyExchangeService.exchange(any())).thenReturn(expectedResult);
 
         // When
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/pln-to-usd")
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/exchange")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestPLNtoUSD)))
                 .andExpect(status().isOk())
@@ -90,10 +88,10 @@ class ExchangeControllerTest {
     @SneakyThrows
     void testExchangeUsdToPln() {
         // Given
-        when(currencyExchangeService.exchangeUsdToPln(any())).thenReturn(expectedResult);
+        when(currencyExchangeService.exchange(any())).thenReturn(expectedResult);
 
         // When
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/usd-to-pln")
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(BASE_URL + "/exchange")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestUSDtoPLN))
                         .accept(MediaType.APPLICATION_JSON))

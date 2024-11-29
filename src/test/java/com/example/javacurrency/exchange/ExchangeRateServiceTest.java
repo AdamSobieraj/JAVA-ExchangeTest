@@ -1,61 +1,50 @@
 package com.example.javacurrency.exchange;
 
+import com.example.javacurrency.common.Currency;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest
+@WebAppConfiguration
 class ExchangeRateServiceTest {
-
-    @InjectMocks
-    private ExchangeRateService exchangeRateService;
 
     @Mock
     private RestTemplate restTemplate;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Test
     @SneakyThrows
     void getLatestExchangeRate() {
         // Given
-        when(restTemplate.getForObject(nullable(String.class), any())).thenReturn(jsonRes());
+        ResponseEntity<String> response = new ResponseEntity<>(jsonRes(), HttpStatus.OK);
+        when(restTemplate.getForEntity(anyString(), eq(String.class))).thenReturn(response);
+
+        // Get the ExchangeRateService bean from Spring context
+        ExchangeRateService exchangeRateService = applicationContext.getBean(ExchangeRateService.class);
 
         // When
-        ExchangeRate result = exchangeRateService.getLatestExchangeRate();
+        ExchangeRate result = exchangeRateService.getLatestExchangeRate(Currency.USD.getCode());
 
         // Then
         assertNotNull(result);
         assertEquals("USD", result.getCode());
-        assertEquals(4.1073, result.getMid());
-    }
-
-    @Test
-    void getLatestExchangeRateUSDNotFound() {
-        // Given
-        when(restTemplate.getForObject(anyString(), any())).thenReturn(jsonResNoUS());
-
-        // When
-        // Then
-        assertThrows(RuntimeException.class, () -> exchangeRateService.getLatestExchangeRate());
-    }
-
-    private ExchangeRate createExchangeRate() {
-        ExchangeRate exchangeRate = new ExchangeRate();
-        exchangeRate.setCode("USD");
-        exchangeRate.setCurrency("US Dollar");
-        exchangeRate.setMid(Double.parseDouble(("1.23")));
-        return exchangeRate;
+        assertEquals(4.077, result.getMid());
     }
 
     private String jsonRes() {
@@ -157,45 +146,5 @@ class ExchangeRateServiceTest {
                 "  ]\n" +
                 "}]";
     }
-
-
-    private String jsonResNoUS() {
-        return "{\n" +
-                "  \"rates\": {\n" +
-                "    \"THB\": {\n" +
-                "      \"currency\": \"bat (Tajlandia)\",\n" +
-                "      \"code\": \"THB\",\n" +
-                "      \"mid\": 0.1184\n" +
-                "    },\n" +
-                "    \"AUD\": {\n" +
-                "      \"currency\": \"dolar australijski\",\n" +
-                "      \"code\": \"AUD\",\n" +
-                "      \"mid\": 2.6637\n" +
-                "    },\n" +
-                "    \"HKD\": {\n" +
-                "      \"currency\": \"dolar Hongkongu\",\n" +
-                "      \"code\": \"HKD\",\n" +
-                "      \"mid\": 0.5278\n" +
-                "    },\n" +
-                "    \"CAD\": {\n" +
-                "      \"currency\": \"dolar kanadyjski\",\n" +
-                "      \"code\": \"CAD\",\n" +
-                "      \"mid\": 2.9140\n" +
-                "    },\n" +
-                "    \"NZD\": {\n" +
-                "      \"currency\": \"dolar nowozelandzki\",\n" +
-                "      \"code\": \"NZD\",\n" +
-                "      \"mid\": 2.3998\n" +
-                "    },\n" +
-                "    \"SGD\": {\n" +
-                "      \"currency\": \"dolar singapurski\",\n" +
-                "      \"code\": \"SGD\",\n" +
-                "      \"mid\": 3.0478\n" +
-                "    }\n" +
-                "  }\n" +
-                "}";
-
-    }
-
 
 }

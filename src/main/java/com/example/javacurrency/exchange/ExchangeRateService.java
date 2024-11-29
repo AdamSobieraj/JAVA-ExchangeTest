@@ -1,39 +1,72 @@
 package com.example.javacurrency.exchange;
 
-import com.example.javacurrency.common.Currency;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-@RequiredArgsConstructor
+@Slf4j
 public class ExchangeRateService {
 
     private final RestTemplate restTemplate;
     private final String nbpUrl;
+    private final ConcurrentHashMap<String, ExchangeRate> exchangeRates = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService scheduler;
 
-    public ExchangeRate getLatestExchangeRate() throws IOException {
-        String response = restTemplate.getForObject(nbpUrl, String.class);
+    public ExchangeRateService(RestTemplate restTemplate, String nbpUrl) {
+        this.restTemplate = restTemplate;
+        this.nbpUrl = nbpUrl;
+        this.scheduler = Executors.newScheduledThreadPool(1);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonString = response.replaceAll("^\\[|\\]$", "");
-        ExchangeRateTable exchangeRateTable = objectMapper.readValue(jsonString, ExchangeRateTable.class);
+        // Aktualizacja kursów przy uruchomieniu programu
+        updateExchangeRates();
 
-        return exchangeRateTable.getRates().stream()
-                .filter(entry -> entry.getCode().equals(Currency.USD.getCode()))
-                .findFirst()
-                .map(this::createExchangeRate)
-                .orElseThrow(() -> new RuntimeException("Unable to fetch USD exchange rate"));
+        // Rozpocznij regularne aktualizacje kursów
+        scheduleUpdate();
+    }
+
+    private void updateExchangeRates() {
+        try {
+
+            log.info("Updating exchange rates");
+
+            ResponseEntity<String> response = restTemplate.getForEntity(nbpUrl, String.class);
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            String jsonString = response.getBody().replaceAll("^\\[|\\]$", "");
+            ExchangeRateTable exchangeRateTable = objectMapper.readValue(jsonString, ExchangeRateTable.class);
+
+            exchangeRates.clear();
+            exchangeRateTable.getRates().forEach(entry -> {
+                ExchangeRate currency = createExchangeRate(entry);
+                exchangeRates.put(currency.getCode(), currency);
+            });
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to update exchange rates", e);
+        }
     }
 
     private ExchangeRate createExchangeRate(ExchangeRate currency) {
-
         ExchangeRate exchangeRate = new ExchangeRate();
         exchangeRate.setCode(currency.getCode());
         exchangeRate.setCurrency(currency.getCode());
         exchangeRate.setMid(currency.getMid());
         return exchangeRate;
+    }
+
+    public ExchangeRate getLatestExchangeRate(String currencyCode) {
+        return exchangeRates.getOrDefault(currencyCode, null);
+    }
+
+    private void scheduleUpdate() {
+        scheduler.scheduleAtFixedRate(this::updateExchangeRates, 0, 24, TimeUnit.HOURS);
     }
 
 }

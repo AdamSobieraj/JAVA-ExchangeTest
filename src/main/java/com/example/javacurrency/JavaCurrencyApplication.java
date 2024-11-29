@@ -3,9 +3,7 @@ package com.example.javacurrency;
 import com.example.javacurrency.account.AccountController;
 import com.example.javacurrency.account.AccountService;
 import com.example.javacurrency.common.AccountRepository;
-import com.example.javacurrency.exchange.CurrencyExchangeService;
-import com.example.javacurrency.exchange.ExchangeController;
-import com.example.javacurrency.exchange.ExchangeRateService;
+import com.example.javacurrency.exchange.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -55,6 +53,16 @@ public class JavaCurrencyApplication {
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
+    }
+
+    @Bean
+    public PlnToUsdStrategy plnToUsdStrategy() {
+        return new PlnToUsdStrategy(exchangeRateService());
+    }
+
+    @Bean
+    public UsdToPlnStrategy usdToPlnStrategy() {
+        return new UsdToPlnStrategy(exchangeRateService());
     }
 
 }
