@@ -1,12 +1,9 @@
 package com.example.javacurrency.account;
 
 import com.example.javacurrency.common.AccountRepository;
-import com.example.javacurrency.common.Currency;
 import com.example.javacurrency.exchange.CurrencyExchangeService;
 import com.example.javacurrency.exchange.ExchangeRequest;
 import lombok.RequiredArgsConstructor;
-
-import java.io.IOException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -26,11 +23,11 @@ public class AccountService {
         return account;
     }
 
-    public UserAccount getAccountDetails(String firstName, String lastName) throws IOException {
+    public UserAccount getAccountDetails(String firstName, String lastName) {
         return accountRepository.getAccountByFirstNameAndLastName(firstName, lastName);
     }
 
-    public UserAccount getAccountDetailsUUID(String uuid) throws IOException {
+    public UserAccount getAccountDetailsUUID(String uuid) {
         return accountRepository.getAccountById(UUID.fromString(uuid));
     }
 
@@ -46,18 +43,20 @@ public class AccountService {
         return UUID.randomUUID();
     }
 
-    public UserAccount exchangeCurrency(String uuid) throws IOException {
-        UserAccount account = accountRepository.getAccountById(UUID.fromString(uuid));
+    public UserAccount exchangeCurrency(AccExchangeCurrencyReq accExchangeCurrencyReq) {
+        UserAccount account = accountRepository.getAccountById(accExchangeCurrencyReq.getUuid());
 
-        ExchangeRequest exchangeRequest = new ExchangeRequest();
-        exchangeRequest.setCurrency(account.getCurrency());
-        exchangeRequest.setAmount(account.getBalance());
+        if ( account != null && !account.getCurrency().equals(accExchangeCurrencyReq.getCurrency())) {
 
-        account.setBalance(currencyExchangeService.exchange(exchangeRequest).getResultAmount());
-        account.setCurrency(account.getCurrency());
+            ExchangeRequest exchangeRequest = new ExchangeRequest();
+            exchangeRequest.setCurrency(accExchangeCurrencyReq.getCurrency());
+            exchangeRequest.setAmount(account.getBalance());
 
+            account.setBalance(currencyExchangeService.exchange(exchangeRequest).getResultAmount());
+            account.setCurrency(accExchangeCurrencyReq.getCurrency());
 
-        updateAccount(account);
+            updateAccount(account);
+        }
 
         return account;
     }

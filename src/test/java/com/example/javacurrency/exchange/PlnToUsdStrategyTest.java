@@ -6,14 +6,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import java.math.BigDecimal;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 class PlnToUsdStrategyTest {
+
+    public static final String MID = "3.5";
+    public static final String AMOUNT = "100";
+    public static final String RESULT_AMOUNT = "350.0";
 
     @Mock
     private ExchangeRateService exchangeRateService;
@@ -30,9 +34,9 @@ class PlnToUsdStrategyTest {
     @SneakyThrows
     void testExchangePlnToUsd() {
         // Given
-        BigDecimal amount = new BigDecimal("100");
+        BigDecimal amount = new BigDecimal(AMOUNT);
         ExchangeRate exchangeRate = new ExchangeRate();
-        exchangeRate.setMid(Double.parseDouble("3.5"));
+        exchangeRate.setMid(Double.parseDouble(MID));
         when(exchangeRateService.getLatestExchangeRate(Currency.USD.getCode())).thenReturn(exchangeRate);
 
         // When
@@ -43,8 +47,8 @@ class PlnToUsdStrategyTest {
         assertEquals(Currency.PLN.getName(), result.getFromCurrency());
         assertEquals(Currency.USD.getName(), result.getToCurrency());
         assertEquals(amount, result.getAmount());
-        assertEquals(new BigDecimal("350.0"), result.getResultAmount());
-        assertEquals(new BigDecimal("3.5"), result.getExchangeRate());
+        assertEquals(new BigDecimal(RESULT_AMOUNT), result.getResultAmount());
+        assertEquals(new BigDecimal(MID), result.getExchangeRate());
 
         verify(exchangeRateService).getLatestExchangeRate(Currency.USD.getCode());
         verifyNoMoreInteractions(exchangeRateService);

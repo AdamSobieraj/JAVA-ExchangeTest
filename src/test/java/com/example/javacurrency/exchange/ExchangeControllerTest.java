@@ -14,9 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.math.BigDecimal;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -24,6 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 class ExchangeControllerTest {
+
+    public static final String AMOUNT = "100";
 
     private static final String BASE_URL = "/api/v1/exchange";
 
@@ -52,11 +52,11 @@ class ExchangeControllerTest {
         expectedResult.setExchangeRate(new BigDecimal("0.8732"));
 
         requestUSDtoPLN = new ExchangeRequest();
-        requestUSDtoPLN.setAmount(new BigDecimal("100"));
+        requestUSDtoPLN.setAmount(new BigDecimal(AMOUNT));
         requestUSDtoPLN.setCurrency(Currency.PLN);
 
         requestPLNtoUSD = new ExchangeRequest();
-        requestPLNtoUSD.setAmount(new BigDecimal("100"));
+        requestPLNtoUSD.setAmount(new BigDecimal(AMOUNT));
         requestPLNtoUSD.setCurrency(Currency.USD);
     }
 

@@ -1,6 +1,7 @@
 package com.example.javacurrency.common;
 
 import com.example.javacurrency.account.UserAccount;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +13,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AccountRepositoryTest {
 
+    public static final String FIRST_NAME = "John";
+    public static final String LAST_NAME = "Doe";
+
     private AccountRepository accountRepository;
     private UserAccount mockUserAccount;
 
@@ -20,8 +24,8 @@ class AccountRepositoryTest {
         mockUserAccount = new UserAccount();
         mockUserAccount.setUuid(UUID.randomUUID());
         mockUserAccount.setEmail("test@example.com");
-        mockUserAccount.setFirstName("John");
-        mockUserAccount.setLastName("Doe");
+        mockUserAccount.setFirstName(FIRST_NAME);
+        mockUserAccount.setLastName(LAST_NAME);
 
         accountRepository = new AccountRepository();
         accountRepository.addAccount(mockUserAccount);
@@ -50,6 +54,7 @@ class AccountRepositoryTest {
     }
 
     @Test
+    @SneakyThrows
     void testGetAccountById() {
         // Given
         accountRepository.addAccount(mockUserAccount);
@@ -69,7 +74,7 @@ class AccountRepositoryTest {
 
         // When
         // Then
-        assertTrue(accountRepository.containsUsername("John", "Doe"));
+        assertTrue(accountRepository.containsUsername(FIRST_NAME, LAST_NAME));
         assertFalse(accountRepository.containsUsername("Jane", "Smith"));
     }
 
@@ -79,7 +84,7 @@ class AccountRepositoryTest {
         accountRepository.addAccount(mockUserAccount);
 
         // When
-        UserAccount result = accountRepository.getAccountByFirstNameAndLastName("John", "DOE");
+        UserAccount result = accountRepository.getAccountByFirstNameAndLastName(FIRST_NAME, "DOE");
 
         // Then
         assertNotNull(result);
@@ -92,7 +97,7 @@ class AccountRepositoryTest {
         accountRepository.addAccount(mockUserAccount);
 
         // When
-        accountRepository.removeAccountByFirstNameAndLastName("John", "Doe");
+        accountRepository.removeAccountByFirstNameAndLastName(FIRST_NAME, "Doe");
 
         // When
         assertFalse(accountRepository.getAllAccounts().contains(mockUserAccount));

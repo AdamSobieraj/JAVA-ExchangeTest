@@ -1,8 +1,11 @@
 package com.example.javacurrency.common;
 
 import com.example.javacurrency.account.UserAccount;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class AccountRepository {
 
@@ -17,10 +20,14 @@ public class AccountRepository {
     }
 
     public UserAccount getAccountById(UUID id) {
-        return accounts.values().stream()
-                .filter(acc -> acc.getUuid().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        if (accounts.isEmpty()) {
+            return null;
+        } else {
+            return accounts.values().stream()
+                    .filter(acc -> acc.getUuid().equals(id))
+                    .findFirst()
+                    .orElse(null);
+        }
     }
 
     public boolean containsUsername(String firstName, String lastName) {
@@ -28,12 +35,16 @@ public class AccountRepository {
                 acc.getFirstName().equals(firstName) && acc.getLastName().equals(lastName));
     }
 
-    public UserAccount getAccountByFirstNameAndLastName(String firstName, String lastName) {
-        return accounts.values().stream()
-                .filter(acc -> acc.getFirstName().equalsIgnoreCase(firstName) &&
-                        acc.getLastName().equalsIgnoreCase(lastName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+    public UserAccount getAccountByFirstNameAndLastName(String firstName, String lastName) throws IllegalArgumentException {
+        if (accounts.isEmpty()) {
+            return null;
+        } else {
+            return accounts.values().stream()
+                    .filter(acc -> acc.getFirstName().equalsIgnoreCase(firstName) &&
+                            acc.getLastName().equalsIgnoreCase(lastName))
+                    .findFirst()
+                    .orElse(null);
+        }
     }
 
     public void removeAccountByFirstNameAndLastName(String firstName, String lastName) {
@@ -60,7 +71,7 @@ public class AccountRepository {
             accounts.put(existingAccount.getUuid(), existingAccount);
             return existingAccount;
         } else {
-            throw new IllegalArgumentException("Account not found for UUID: " + updatedAccount.getUuid().toString());
+            return null;
         }
     }
 
