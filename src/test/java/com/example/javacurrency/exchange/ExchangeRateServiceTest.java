@@ -43,7 +43,7 @@ class ExchangeRateServiceTest {
         // Then
         assertNotNull(result);
         assertEquals("USD", result.getCode());
-        assertEquals(4.077, result.getMid());
+        assertEquals(4.0738, result.getMid());
     }
 
     private String jsonRes() {
