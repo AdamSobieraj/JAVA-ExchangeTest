@@ -27,3 +27,9 @@ This project showcases user account creation and exchange of currency basing on 
 
 1. Clone this repository:
 2. Build and run
+
+## With Docker
+1. Build
+   docker build -t my-java-app .
+2. Run
+   docker run -p 3333:3333 my-java-app
